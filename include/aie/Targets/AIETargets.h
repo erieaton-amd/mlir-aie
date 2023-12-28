@@ -47,6 +47,9 @@ AIELLVMLink(llvm::raw_ostream &output, std::vector<std::string> Files,
             bool DisableDITypeMap = false, bool NoVerify = false,
             bool Internalize = false, bool OnlyNeeded = false,
             bool PreserveAssemblyUseListOrder = false, bool Verbose = false);
+            
+mlir::LogicalResult AIETranslateToTargetArch(mlir::ModuleOp module,
+                                             llvm::raw_ostream &output);
 } // namespace AIE
 
 namespace aievec {

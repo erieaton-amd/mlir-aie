@@ -93,6 +93,20 @@ void writeBufferMap(raw_ostream &output, BufferOp buf, int offset) {
          << "0x" << llvm::utohexstr(offset + bufferBaseAddr) << " " << numBytes
          << '\n';
 }
+
+LogicalResult AIETranslateToTargetArch(ModuleOp module, raw_ostream &output) {
+  AIEArch arch = AIEArch::AIE1;
+  if (!module.getOps<DeviceOp>().empty()) {
+    DeviceOp targetOp = *(module.getOps<DeviceOp>().begin());
+    arch = targetOp.getTargetModel().getTargetArch();
+  }
+  if (arch == AIEArch::AIE1)
+    output << "AIE\n";
+  else
+    output << stringifyEnum(arch) << "\n";
+  return success();
+}
+
 void registerAIETranslations() {
   TranslateFromMLIRRegistration registrationMMap(
       "aie-generate-mmap", "Generate AIE memory map",
@@ -193,18 +207,7 @@ void registerAIETranslations() {
 
   TranslateFromMLIRRegistration registrationTargetArch(
       "aie-generate-target-arch", "Get the target architecture",
-      [](ModuleOp module, raw_ostream &output) {
-        AIEArch arch = AIEArch::AIE1;
-        if (!module.getOps<DeviceOp>().empty()) {
-          DeviceOp targetOp = *(module.getOps<DeviceOp>().begin());
-          arch = targetOp.getTargetModel().getTargetArch();
-        }
-        if (arch == AIEArch::AIE1)
-          output << "AIE\n";
-        else
-          output << stringifyEnum(arch) << "\n";
-        return success();
-      },
+      AIETranslateToTargetArch,
       registerDialects);
 
   TranslateFromMLIRRegistration registrationCoreList(
